@@ -4,7 +4,7 @@
   "description": "",
   "main": "quarto.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "server": "runghc src/server.hs -p 8080"
   },
   "author": "",
   "license": "ISC",
