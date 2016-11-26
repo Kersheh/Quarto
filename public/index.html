@@ -7,11 +7,62 @@
   <base href="/">
 
   <link rel="stylesheet" href="public/css/styles.css">
+  <script src="node_modules/jquery/dist/jquery.min.js"></script>
   <script src="node_modules/ramda/dist/ramda.min.js"></script>
   <script src="public/js/quarto.js"></script>
 
 </head>
 <body>
-  Home
+  <div class="container">
+    <div id="game">
+      <table id="board">
+        <tbody>
+          <tr y="0">
+            <td class="tile" x="0"></td>
+            <td class="tile" x="1"></td>
+            <td class="tile" x="2"></td>
+            <td class="tile" x="3"></td>
+          </tr>
+          <tr y="1">
+            <td class="tile" x="0"></td>
+            <td class="tile" x="1"></td>
+            <td class="tile" x="2"></td>
+            <td class="tile" x="3"></td>
+          </tr>
+          <tr y="2">
+            <td class="tile" x="0"></td>
+            <td class="tile" x="1"></td>
+            <td class="tile" x="2"></td>
+            <td class="tile" x="3"></td>
+          </tr>
+          <tr y="3">
+            <td class="tile" x="0"></td>
+            <td class="tile" x="1"></td>
+            <td class="tile" x="2"></td>
+            <td class="tile" x="3"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="pieces">
+      <div class="piece" id="p0"></div>
+      <div class="piece" id="p1"></div>
+      <div class="piece" id="p2"></div>
+      <div class="piece" id="p3"></div>
+      <div class="piece" id="p4"></div>
+      <div class="piece" id="p5"></div>
+      <div class="piece" id="p6"></div>
+      <div class="piece" id="p7"></div>
+      <div class="piece" id="p8"></div>
+      <div class="piece" id="p9"></div>
+      <div class="piece" id="p10"></div>
+      <div class="piece" id="p11"></div>
+      <div class="piece" id="p12"></div>
+      <div class="piece" id="p13"></div>
+      <div class="piece" id="p14"></div>
+      <div class="piece" id="p15"></div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
