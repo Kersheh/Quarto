@@ -40,23 +40,12 @@ body {
   padding: 3px;
   width: 90px;
   height: 90px;
+  cursor: pointer;
 }
 
-/*#pieces {
-  margin-left: 600px;
-  margin-top: 50px;
-  width: 440px;
-  height: 440px;
+.tile.select {
+  background-color: #C7CDC6;
 }
-
-.piece {
-  float: left;
-  padding: 5px;
-  width: 100px;
-  height: 100px;
-  background-color: #FFF;
-  border: solid #B4B4B4 2px;
-}*/
 
 #pieces {
   position: relative;
@@ -69,13 +58,14 @@ body {
   display: inline-block;
   position: relative;
   margin: 5px;
+  cursor: pointer;
 }
 
 .piece.select {
   outline-style: solid;
   outline-width: 3px;
   outline-offset: 2px;
-  outline-color: orange;
+  outline-color: #7D7D7D;
 }
 
 .short {
@@ -97,7 +87,7 @@ body {
 }
 
 .dark {
-  background: brown;
+  background: #800000;
 }
 
 .box {
@@ -120,4 +110,38 @@ body {
   margin-left: -15px;
   top: 50%;
   margin-top: -15px;
+}
+
+#info {
+  position: absolute;
+  top: 500px;
+  left: 400px;
+}
+
+.select-button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#info-next-piece {
+  position: relative;
+  top: -100px;
+  left: 180px;
+  padding: 15px 32px;
+  font-size: 16px;
+  text-decoration: none;
+}
+
+#next-piece {
+  position: absolute;
+  top: 50px;
+  left: 100px;
+  cursor: default;
 }

@@ -17,7 +17,14 @@ $(() => {
     R.Either = Either;
 
     // initial empty board where each tile is Nothing
-    var empty_board = R.repeat(R.repeat(R.Maybe.Nothing(), 4), 4);
+    var init_board = R.repeat(R.repeat(R.Maybe.Nothing(), 4), 4);
+
+    // jQuery tile selectors
+    var getTileSelector = (x, y) => {
+      return $('tr[y="' + y + '"]').children('td[x="' + x + '"]');
+    };
+    var curriedGetTiles = R.curry(getTileSelector);
+    var tiles_selectors = R.ap(R.map(curriedGetTiles, [0, 1, 2, 3]), [0, 1, 2, 3]);
 
     // piece characteristics
     var piece_height = ['tall', 'short'];
@@ -50,9 +57,6 @@ $(() => {
       R.forEach((x) => {
         selector.addClass(x);
       }, classes);
-      // selector.on('click', () => {
-      //   console.log('hello from', selector);
-      // });
     };
 
     // apply list of classes to list of jQuery selectors
@@ -66,15 +70,30 @@ $(() => {
       }, '', piece);
     };
 
-    // connect to IRC
-    var connectIRC = () => {
-
-    };
-
     // check board for winner
     var isOver = (board) => {
       // return R.Maybe.Just('p1');
       return R.Maybe.Nothing();
+    };
+
+    // check if board is empty
+    var isBoardEmpty = (board) => {
+      var tiles = R.filter((x) => {
+        return x.isJust();
+      }, R.flatten(board));
+      return tiles.length === 0;
+    }
+
+    // add piece to board
+    var addPiece = (board, piece, x, y) => {
+      return R.update(y, R.update(x, R.Maybe.Just(piece), R.nth(y, board)), board);
+    };
+
+    // update list of available pieces
+    var updatePieces = (piece, pieces) => {
+      return R.reject((x) => {
+        return x == piece;
+      }, pieces);
     };
 
     // select piece for opponent
@@ -82,11 +101,41 @@ $(() => {
 
     };
 
-    // run game
-    var runGame = (board, pieces) => {
-      // test
-      UI.playPiece(0, 0, getPieceClasses(pieces[1]));
+    // play piece on tile
+    var selectTile = (x, y, piece) => {
+      UI.playPiece(x, y, getPieceClasses(piece));
+    };
 
+    // get opponents piece selection and turn
+    var getPiece = (pieces) => {
+      return getRandomPiece(pieces);
+    };
+
+    // temporary bot piece selection
+    var getRandomPiece = (pieces) => {
+      return pieces[Math.floor(Math.random() * pieces.length)];
+    }
+    var setRandomPiece = (board, piece) => {
+
+    };
+
+    // connect to IRC
+    var connectIRC = () => {
+      // establish connection
+      // determine who goes first (p1 == user)
+      return 'p2';
+    };
+
+    // setup app
+    var configApp = () => {
+      // connect to IRC and determine if user is first or second
+      var turn = connectIRC();
+      turn ? true : configApp();
+      return turn;
+    };
+
+    // run game
+    var runGame = (board, pieces, turn) => {
       var winner = isOver(board);
       //
       if(winner.orJust()) {
@@ -94,15 +143,29 @@ $(() => {
       }
       //
       else {
-        console.log('test');
+        // player 1 - user turn
+        var play = turn == 'p1' ? () => {
+          console.log('test2');
+        // player 2 - opponent turn
+        } : () => {
+          var piece = getPiece(pieces);
+          UI.selectTile(runGame, board, pieces, 'p2');
+        }
+        play();
       }
     };
 
     // initialize web app
     var initApp = () => {
       applyClassesToSelectors(init_pieces, pieces_selectors); // generate UI pieces
-      UI.eventListeners(pieces_selectors); // attach listeners
-      runGame(empty_board, init_pieces);
+      UI.eventListeners(pieces_selectors, tiles_selectors); // attach listeners
+      // UI.hideNext(); // hide next piece
+      // test
+      UI.updateNext(getRandomPiece(init_pieces));
+      // selectTile(0, 0, init_pieces[0]);
+      //
+      var turn = configApp();
+      runGame(init_board, init_pieces, turn);
     };
 
     initApp();
