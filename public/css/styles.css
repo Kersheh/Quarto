@@ -139,9 +139,16 @@ body {
   text-decoration: none;
 }
 
-#next-piece {
+.next-piece {
+  display: inline-block;
+  position: relative;
+  margin: 5px;
   position: absolute;
   top: 50px;
   left: 100px;
   cursor: default;
+}
+
+.p1-select, .p1-selected, .p2-selected {
+  display: none;
 }

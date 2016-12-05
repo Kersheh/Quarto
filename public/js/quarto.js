@@ -55,7 +55,7 @@ var quarto = () => {
       return x.isJust();
     }, R.flatten(board));
     return tiles.length === 0;
-  }
+  };
 
   // update board with piece
   var updateBoard = (board, piece, x, y) => {
@@ -65,27 +65,37 @@ var quarto = () => {
   // update list of available pieces
   var updatePieces = (piece, pieces) => {
     return R.reject((x) => {
-      return x == piece;
+      // toString to prevent equality bug
+      return x.toString() === piece.toString();
     }, pieces);
   };
 
   // get opponents piece selection and turn
   var getPiece = (pieces) => {
-    return getRandomPiece(pieces);
+
   };
 
   // temporary bot piece selection
   var getRandomPiece = (pieces) => {
     return pieces[Math.floor(Math.random() * pieces.length)];
-  }
+  };
 
   // temporary bot piece placement
   var setRandomPiece = (board, piece) => {
-
+    // hacky loop for random selection
+    while(1) {
+      var x = Math.floor(Math.random() * 4), y = Math.floor(Math.random() * 4);
+      if(board[y][x].isNothing()) {
+        return {
+          x: x,
+          y: y
+        };
+      }
+    }
   };
 
   // run game
-  var runGame = (board, pieces, turn) => {
+  var runGame = (board, pieces, next_piece, turn) => {
     var winner = isOver(board);
     //
     if(winner.orJust()) {
@@ -95,12 +105,14 @@ var quarto = () => {
     else {
       // player 1 - user turn
       var play = turn == 'p1' ? () => {
-        console.log('test2');
+        selectTile(runGame, updateBoard, updatePieces, board, next_piece, pieces, 'p1');
       // player 2 - opponent turn
       } : () => {
-        var piece = getPiece(pieces); // get piece from opponent
-        updateNext(piece); // update UI
-        selectTile(runGame, updateBoard, updatePieces, board, piece, pieces, 'p2');
+        var response = setRandomPiece(board, next_piece, pieces); // opponent turn response
+        playPiece(response.x, response.y, next_piece); // update ui
+        var new_board = updateBoard(board, next_piece, response.x, response.y);
+        var new_pieces = updatePieces(next_piece, pieces);
+        selectTile(runGame, updateBoard, updatePieces, new_board, getRandomPiece(new_pieces), new_pieces, 'p2');
       }
       play();
     }
@@ -110,7 +122,7 @@ var quarto = () => {
   var connectIRC = () => {
     // establish connection
     // determine who goes first (p1 == user)
-    return 'p2';
+    return 'p1';
   };
 
   // setup app
@@ -125,7 +137,7 @@ var quarto = () => {
   var initApp = () => {
     setup(init_pieces); // setup UI
     var turn = configApp();
-    runGame(init_board, init_pieces, turn);
+    runGame(init_board, init_pieces, getRandomPiece(init_pieces), turn); // test with starting piece
   };
 
   initApp();

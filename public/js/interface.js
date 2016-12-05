@@ -49,26 +49,32 @@ var playPiece = (x, y, classes) => {
   appendClasses(classes, selector.children());
 };
 
-// hide opponent piece selection
-var hideNext = () => {
-  $('.p1-select').show();
-  $('.p2-select').hide();
-};
-
 // show opponent piece selection
 var showNext = () => {
-  $('.p1-select').hide();
-  $('.p2-select').show();
+  $('.p1-selected').hide();
+  $('.p2-selected').show();
 };
 
-// update piece to play
+// hide opponent piece selection
+var hideNext = () => {
+  $('.p2-selected').hide();
+  $('.p1-select').show();
+};
+
+// update selected piece info
+var waitNext = () => {
+  $('.p1-select').hide();
+  $('.p1-selected').show();
+};
+
+// update next piece to be played
 var updateNext = (classes) => {
-  $('#next-piece').removeClass();
-  $('#next-piece').addClass('piece');
+  var selector = $('.next-piece');
+  selector.removeClass();
+  selector.addClass('next-piece');
   classes.forEach((x) => {
-    $('#next-piece').addClass(x);
+    selector.addClass(x);
   });
-  showNext();
 };
 
 // piece and tile selection -- not a very functional solution
@@ -81,18 +87,9 @@ var clearSelectedTile = () => {
   selected_tile = undefined;
 };
 
-var attachBoardListener = () => {
-
-};
-
-var attachPieceListener = () => {
-
-};
-
 var attachListeners = () => {
   // piece selectors
   pieces_selectors().forEach((selector) => {
-    // console.log(selector);
     selector.on('click', () => {
       if(typeof selected_piece !== 'undefined'){
         selected_piece.removeClass('select');
@@ -116,6 +113,7 @@ var attachListeners = () => {
 // get selected tile coordinates
 var getTile = () => {
   if(typeof selected_tile !== 'undefined') {
+    selected_tile.unbind(); // remove selection functionality
     return {
       x: parseInt(selected_tile.attr('x')),
       y: parseInt(selected_tile.parent().attr('y'))
@@ -136,21 +134,44 @@ var getPiece = () => {
   }
 };
 
+// set button
+var setButton = (callback) => {
+  return $('.select-button').on('click', () => {
+    $('.select-button').unbind(); // reset button binding after use
+    callback();
+  });
+};
+
 var selectTile = (game, updateBoard, updatePieces, board, piece, pieces, turn) => {
-  if(turn === 'p2') {
-    $('.select-button').on('click', () => {
+  // player 1 turn
+  if(turn === 'p1') {
+    // display piece to be played
+    updateNext(piece);
+    showNext();
+    // set select button to place piece
+    setButton(() => {
+      playPiece(getTile().x, getTile().y, piece); // update ui
       var new_board = updateBoard(board, piece, getTile().x, getTile().y);
       var new_pieces = updatePieces(piece, pieces);
-      playPiece(getTile().x, getTile().y, piece);
+      // update ui
       hideNext();
       removePiece(piece);
       clearSelectedTile();
-      $('.select-button').unbind(); // reset button binding
-      $('.select-button').on('click', () => {
+      // set select button to select piece for opponent
+      setButton(() => {
         var opponent_piece = getPiece();
-        game(new_board, new_pieces, 'p1');
+        removePiece(opponent_piece);
+        updateNext(opponent_piece);
+        waitNext();
+        game(new_board, new_pieces, opponent_piece, 'p2');
       });
     });
+  }
+  else {
+    // display piece to be played
+    updateNext(piece);
+    showNext();
+    game(board, pieces, piece, 'p1');
   }
 };
 
