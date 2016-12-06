@@ -77,14 +77,28 @@ var updateNext = (classes) => {
   });
 };
 
+// display winner
+var displayWinner = (result) => {
+  $('#info-next-piece').hide();
+  $('#game-results').show();
+  if(result === 'p1') {
+    $('#game-results').append(' You have won! :)');
+  }
+  if(result === 'p2') {
+    $('#game-results').append(' Your opponent has won. :(');
+  }
+  if(result == 'tie') {
+    $('#game-results').append(' It\'s a tie!');
+  }
+};
+
 // piece and tile selection -- not a very functional solution
 var selected_piece = undefined;
-var clearSelectedPiece = () => {
-  selected_piece = undefined;
-};
 var selected_tile = undefined;
-var clearSelectedTile = () => {
+var clearSelected = () => {
+  selected_piece = undefined;
   selected_tile = undefined;
+  $('.select').removeClass('select');
 };
 
 var attachListeners = () => {
@@ -111,26 +125,28 @@ var attachListeners = () => {
 };
 
 // get selected tile coordinates
-var getTile = () => {
+var getTile = (callback, fallback) => {
   if(typeof selected_tile !== 'undefined') {
-    selected_tile.unbind(); // remove selection functionality
-    return {
-      x: parseInt(selected_tile.attr('x')),
-      y: parseInt(selected_tile.parent().attr('y'))
-    };
+    selected_tile.unbind(); // remove selection functionality of tile
+    x = parseInt(selected_tile.attr('x'));
+    y = parseInt(selected_tile.parent().attr('y'));
+    callback(x, y);
   }
+  // recursive call if no tile selected
   else {
-    return undefined;
+    fallback();
   }
 };
 
 // get selected piece
-var getPiece = () => {
+var getPiece = (callback, fallback) => {
   if(typeof selected_piece !== 'undefined') {
-    return getPieceClasses(selected_piece);
+    var piece = getPieceClasses(selected_piece);
+    callback(piece);
   }
+  // recursive call if no piece selected
   else {
-    return undefined;
+    fallback();
   }
 };
 
@@ -139,6 +155,7 @@ var setButton = (callback) => {
   return $('.select-button').on('click', () => {
     $('.select-button').unbind(); // reset button binding after use
     callback();
+    clearSelected(); // clear selection
   });
 };
 
@@ -149,23 +166,35 @@ var selectTile = (game, updateBoard, updatePieces, board, piece, pieces, turn) =
     updateNext(piece);
     showNext();
     // set select button to place piece
-    setButton(() => {
-      playPiece(getTile().x, getTile().y, piece); // update ui
-      var new_board = updateBoard(board, piece, getTile().x, getTile().y);
-      var new_pieces = updatePieces(piece, pieces);
-      // update ui
-      hideNext();
-      removePiece(piece);
-      clearSelectedTile();
-      // set select button to select piece for opponent
+    var p1_select_tile = () => {
       setButton(() => {
-        var opponent_piece = getPiece();
-        removePiece(opponent_piece);
-        updateNext(opponent_piece);
-        waitNext();
-        game(new_board, new_pieces, opponent_piece, 'p2');
+        getTile((x, y) => {
+          playPiece(x, y, piece); // update ui
+          var new_board = updateBoard(board, piece, x, y);
+          var new_pieces = updatePieces(piece, pieces);
+          // update ui
+          hideNext();
+          removePiece(piece);
+          // set select button to select piece for opponent
+          var p1_select_piece = () => {
+            setButton(() => {
+              getPiece((piece) => {
+                updateNext(piece);
+                removePiece(piece);
+                waitNext();
+                game(new_board, new_pieces, piece, 'p2');
+              }, () => {
+                p1_select_piece();
+              });
+            });
+          };
+          p1_select_piece();
+        }, () => {
+          p1_select_tile();
+        });
       });
-    });
+    };
+    p1_select_tile();
   }
   else {
     // display piece to be played

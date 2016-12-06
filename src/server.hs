@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Server where
-  
+
 import Control.Applicative
 import Snap.Core
 import Snap.Util.FileServe
