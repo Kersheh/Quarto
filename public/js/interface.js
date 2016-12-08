@@ -159,7 +159,7 @@ var setButton = (callback) => {
   });
 };
 
-var selectTile = (board, piece, pieces, turn) => {
+var selectTile = (board, piece, pieces, turn, first) => {
   // player 1 turn
   if(turn === 'p1') {
     // set select button to place piece
@@ -177,7 +177,7 @@ var selectTile = (board, piece, pieces, turn) => {
           }
 
           else {
-            runGame(new_board, new_pieces, piece, 'p2');
+            runGame(new_board, new_pieces, piece, 'p2', false);
           }
         }, () => {
           p1_select_tile();
@@ -192,7 +192,7 @@ var selectTile = (board, piece, pieces, turn) => {
           updateNext(piece);
           removePiece(piece);
           waitNext();
-          runGame(board, pieces, piece, 'p2');
+          runGame(board, pieces, piece, 'p2', false);
         }, () => {
           p1_select_piece(board, pieces);
         });
@@ -200,7 +200,7 @@ var selectTile = (board, piece, pieces, turn) => {
     };
 
     // execute turn
-    if(!isBoardEmpty(board)) {
+    if(!first) {
       updateNext(piece);
       showNext();
       p1_select_tile();
@@ -214,7 +214,7 @@ var selectTile = (board, piece, pieces, turn) => {
     // display piece to be played
     updateNext(piece);
     showNext();
-    runGame(board, pieces, piece, 'p1');
+    runGame(board, pieces, piece, 'p1', false);
   }
 };
 

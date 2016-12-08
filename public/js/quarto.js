@@ -127,7 +127,7 @@ var botResponse = (board, piece, pieces) => {
 };
 
 // run game
-var runGame = (board, pieces, next_piece, turn) => {
+var runGame = (board, pieces, next_piece, turn, first) => {
   // check for winner
   var winner = isOver(board, turn);
   if(winner.orJust()) {
@@ -137,7 +137,7 @@ var runGame = (board, pieces, next_piece, turn) => {
   else {
     // player 1 - user turn
     var play = turn == 'p1' ? () => {
-      selectTile(board, next_piece, pieces, 'p1');
+      selectTile(board, next_piece, pieces, 'p1', first);
     // player 2 - opponent turn
     } : () => {
       var response = botResponse(board, next_piece, pieces); // opponent turn response
@@ -152,10 +152,10 @@ var runGame = (board, pieces, next_piece, turn) => {
       }
 
       if(!isBoardFull(new_board)) {
-        selectTile(new_board, response.next_piece, new_pieces, 'p2');
+        selectTile(new_board, response.next_piece, new_pieces, 'p2', first);
       }
       else {
-        runGame(new_board, new_pieces, [], 'p2'); // board is full, end game
+        runGame(new_board, new_pieces, [], 'p2', false); // board is full, end game
       }
     }
     play();
@@ -165,23 +165,20 @@ var runGame = (board, pieces, next_piece, turn) => {
 /* App configuration */
 
 // connect to IRC
-var connectIRC = () => {
+var connectIRC = (callback) => {
   // establish connection
   // determine who goes first (p1 == user)
-  return 'p2';
-};
-
-// setup app
-var configApp = () => {
-  // connect to IRC and determine if user is first or second
-  var turn = connectIRC();
-  turn ? true : configApp();
-  return turn;
+  var test = setInterval(() => {
+    callback('p1');
+    clearInterval(test);
+  }, 1000);
+  test;
 };
 
 // initialize web app
 var initApp = () => {
   setup(init_pieces); // setup UI
-  var turn = configApp();
-  runGame(init_board, init_pieces, [], turn); // test with starting piece
+  connectIRC((turn) => {
+    runGame(init_board, init_pieces, [], turn, true);
+  });
 };
