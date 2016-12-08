@@ -27,7 +27,13 @@ var applyClassesToSelectors = (classes, selectors) => {
   R.zipWith(appendClasses, classes, selectors);
 };
 
-// get piece classses and strip away 'piece' and 'select' class
+// setup DOM interface
+var setup = (pieces) => {
+  applyClassesToSelectors(pieces, pieceSelectors());
+  attachListeners();
+};
+
+// get piece classes and strip away 'piece' and 'select' class
 var getPieceClasses = (selector) => {
   var classes = selector.attr('class').split(' ');
   return R.reject((x) => { return x == 'piece' || x == 'select'; }, classes);
@@ -77,6 +83,17 @@ var updateNext = (classes) => {
   });
 };
 
+// unbind selectors
+var unbindSelectors = () => {
+  tileSelectors().forEach((selector) => {
+    selector.unbind();
+  });
+  pieceSelectors().forEach((selector) => {
+    selector.unbind();
+  });
+  $('.select-button').unbind();
+};
+
 // display winner
 var displayWinner = (result) => {
   $('#info-next-piece').hide();
@@ -90,6 +107,7 @@ var displayWinner = (result) => {
   if(result == 'tie') {
     $('#game-results').append(' It\'s a tie!');
   }
+  unbindSelectors();
 };
 
 // piece and tile selection -- not a functional solution using mutable data
@@ -101,6 +119,7 @@ var clearSelected = () => {
   $('.select').removeClass('select');
 };
 
+// attach listeners piece and tile selectors
 var attachListeners = () => {
   // piece selectors
   pieceSelectors().forEach((selector) => {
@@ -150,7 +169,7 @@ var getPiece = (callback, fallback) => {
   }
 };
 
-// set button
+// set the select button functionality
 var setButton = (callback) => {
   return $('.select-button').on('click', () => {
     $('.select-button').unbind(); // reset button binding after use
@@ -166,16 +185,14 @@ var selectTile = (board, piece, pieces, turn, first) => {
     var p1_select_tile = () => {
       setButton(() => {
         getTile((x, y) => {
-          playPiece(x, y, piece); // update ui
+          playPiece(x, y, piece);
           var new_board = updateBoard(board, piece, x, y);
           var new_pieces = updatePieces(piece, pieces);
-          // update ui
           hideNext();
           removePiece(piece);
           if(!isBoardFull(new_board)) {
             p1_select_piece(new_board, new_pieces);
           }
-
           else {
             runGame(new_board, new_pieces, piece, 'p2', false);
           }
@@ -211,15 +228,8 @@ var selectTile = (board, piece, pieces, turn, first) => {
     }
   }
   else {
-    // display piece to be played
     updateNext(piece);
     showNext();
     runGame(board, pieces, piece, 'p1', false);
   }
-};
-
-// setup UI
-var setup = (pieces) => {
-  applyClassesToSelectors(pieces, pieceSelectors());
-  attachListeners();
 };

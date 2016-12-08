@@ -33,23 +33,60 @@ var init_board = R.repeat(R.repeat(R.Maybe.Nothing(), 4), 4);
 
 /* Quarto game functionality */
 
-var getBoardWinConditions = (board) => {
-  var rows = [], cols = [], diags = [];
-  var test = R.forEach((y, i) => {
-    return 1;
-  }, board);
-  // console.log(test);
+// retrieve rows or columns from board with 4 pieces
+var getLines = (board) => {
+  var lines = R.reject((i) => {
+    return i.length === 0;
+  }, R.map((y) => {
+    return R.reject((x) => {
+      return x.isNothing();
+    }, y);
+  }, board));
+  return R.filter((line) => {
+    return line.length === 4;
+  }, lines);
 };
 
-// check for winning condition
-var isWinner = (board) => {
-  getBoardWinConditions(board);
+// retrieve properties of pieces
+var getProperties = (pieces) => {
+  return R.unnest(R.map((i) => {
+    return i.orJust();
+  }, R.unnest(pieces)));
+};
+
+// check for winning condition of a line
+var checkLine = (line) => {
+  var props = R.countBy((x) => {
+    return x;
+  })(getProperties(line));
+  var count = R.filter((prop) => {
+    return prop === 4;
+  }, R.values(props));
+  if(count.length > 0) {
+    return true;
+  }
+  return false;
+};
+
+// check for winning board states
+var isWinner = (lines) => {
+  var results = R.map(checkLine, lines);
+  return R.contains(true, results);
+};
+
+var checkBoard = (board) => {
+  var rows = getLines(board);
+  var cols = getLines(R.transpose(board, board));
+  var diags = []; // ??? functionally
+  if(isWinner(rows) || isWinner(cols) || isWinner(diags)) {
+    return true;
+  }
   return false;
 };
 
 // check board for winner
 var isOver = (board, turn) => {
-  if(isWinner(board)) {
+  if(checkBoard(board)) {
     if(turn === 'p1') {
       return R.Maybe.Just('p2');
     }
@@ -169,7 +206,7 @@ var connectIRC = (callback) => {
   // establish connection
   // determine who goes first (p1 == user)
   var test = setInterval(() => {
-    callback('p1');
+    callback('p2');
     clearInterval(test);
   }, 1000);
   test;
