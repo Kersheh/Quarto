@@ -34,8 +34,17 @@ var quarto = () => {
 
   /* Quarto game functionality */
 
-  var isWinner = (board) => {
+  var getBoardWinConditions = (board) => {
+    var rows = [], cols = [], diags = [];
+    var test = R.forEach((y, i) => {
+      return 1;
+    }, board);
+    console.log(test);
+  };
 
+  // check for winning condition
+  var isWinner = (board) => {
+    getBoardWinConditions(board);
     return false;
   };
 

@@ -4,11 +4,12 @@
   "description": "",
   "main": "quarto.js",
   "scripts": {
-    "server": "runghc src/server.hs -p 8080"
+    "server": "node server.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "express": "^4.14.0",
     "ramda": "^0.22.1"
   }
 }
