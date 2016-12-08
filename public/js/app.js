@@ -9,6 +9,6 @@ $(() => {
     console.log('Modules missing.');
   }
   else {
-    quarto();
+    initApp();
   }
 });

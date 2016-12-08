@@ -3,12 +3,12 @@ var getTileSelector = (x, y) => {
   return $('tr[y="' + y + '"]').children('td[x="' + x + '"]');
 };
 var curriedGetTiles = R.curry(getTileSelector);
-var tiles_selectors = () => {
+var tileSelectors = () => {
   return R.ap(R.map(curriedGetTiles, [0, 1, 2, 3]), [0, 1, 2, 3]);
 };
 
 // jQuery pieces selectors
-var pieces_selectors = () => {
+var pieceSelectors = () => {
   return [$('#p0'), $('#p1'), $('#p2'), $('#p3'),
           $('#p4'), $('#p5'), $('#p6'), $('#p7'),
           $('#p8'), $('#p9'), $('#p10'), $('#p11'),
@@ -92,7 +92,7 @@ var displayWinner = (result) => {
   }
 };
 
-// piece and tile selection -- not a very functional solution
+// piece and tile selection -- not a functional solution using mutable data
 var selected_piece = undefined;
 var selected_tile = undefined;
 var clearSelected = () => {
@@ -103,7 +103,7 @@ var clearSelected = () => {
 
 var attachListeners = () => {
   // piece selectors
-  pieces_selectors().forEach((selector) => {
+  pieceSelectors().forEach((selector) => {
     selector.on('click', () => {
       if(typeof selected_piece !== 'undefined'){
         selected_piece.removeClass('select');
@@ -113,7 +113,7 @@ var attachListeners = () => {
     });
   });
   // tile selectors
-  tiles_selectors().forEach((selector) => {
+  tileSelectors().forEach((selector) => {
     selector.on('click', () => {
       if(typeof selected_tile !== 'undefined'){
         selected_tile.removeClass('select');
@@ -159,12 +159,9 @@ var setButton = (callback) => {
   });
 };
 
-var selectTile = (game, updateBoard, updatePieces, board, piece, pieces, turn) => {
+var selectTile = (board, piece, pieces, turn) => {
   // player 1 turn
   if(turn === 'p1') {
-    // display piece to be played
-    updateNext(piece);
-    showNext();
     // set select button to place piece
     var p1_select_tile = () => {
       setButton(() => {
@@ -175,37 +172,54 @@ var selectTile = (game, updateBoard, updatePieces, board, piece, pieces, turn) =
           // update ui
           hideNext();
           removePiece(piece);
-          // set select button to select piece for opponent
-          var p1_select_piece = () => {
-            setButton(() => {
-              getPiece((piece) => {
-                updateNext(piece);
-                removePiece(piece);
-                waitNext();
-                game(new_board, new_pieces, piece, 'p2');
-              }, () => {
-                p1_select_piece();
-              });
-            });
-          };
-          p1_select_piece();
+          if(!isBoardFull(new_board)) {
+            p1_select_piece(new_board, new_pieces);
+          }
+
+          else {
+            runGame(new_board, new_pieces, piece, 'p2');
+          }
         }, () => {
           p1_select_tile();
         });
       });
     };
-    p1_select_tile();
+
+    // set select button to select piece for opponent
+    var p1_select_piece = (board, pieces) => {
+      setButton(() => {
+        getPiece((piece) => {
+          updateNext(piece);
+          removePiece(piece);
+          waitNext();
+          runGame(board, pieces, piece, 'p2');
+        }, () => {
+          p1_select_piece(board, pieces);
+        });
+      });
+    };
+
+    // execute turn
+    if(!isBoardEmpty(board)) {
+      updateNext(piece);
+      showNext();
+      p1_select_tile();
+    }
+    else {
+      hideNext();
+      p1_select_piece(board, pieces);
+    }
   }
   else {
     // display piece to be played
     updateNext(piece);
     showNext();
-    game(board, pieces, piece, 'p1');
+    runGame(board, pieces, piece, 'p1');
   }
 };
 
 // setup UI
 var setup = (pieces) => {
-  applyClassesToSelectors(pieces, pieces_selectors());
+  applyClassesToSelectors(pieces, pieceSelectors());
   attachListeners();
 };
