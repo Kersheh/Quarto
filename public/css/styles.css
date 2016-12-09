@@ -5,7 +5,7 @@ body {
   color: #333;
   background-color: #F6F6F4;
   line-height: 1.5;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 10pt;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -14,6 +14,14 @@ body {
 
 .container {
   margin: 0 auto;
+}
+
+.title {
+  position: absolute;
+  top: 3px;
+  left: 100px;
+  font-size: 30px;
+  font-family: 'Bungee', cursive;
 }
 
 #game {

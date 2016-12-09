@@ -4,7 +4,6 @@
 
 // monet js -- monadic library
 R.Maybe = Maybe;
-R.Either = Either;
 
 /* Quarto game setup */
 
@@ -47,6 +46,39 @@ var getLines = (board) => {
   }, lines);
 };
 
+// retrieve diagonal line from top left to bottom right of board
+var getDiagonal = (board) => {
+  var diag = R.unnest(board.map((y, i) => {
+    return y.filter((x, j) => {
+      if(i === j) {
+        return x;
+      }
+    });
+  }));
+  var line = R.reject((i) => {
+    return i.isNothing();
+  }, diag);
+  if(line.length === 4) {
+    return line;
+  }
+  return [];
+};
+
+// rotate the board 90 degrees
+var rotateBoard = (board) => {
+  return R.map((row) => {
+    return R.reverse(row);
+  }, R.transpose(board, board));
+}
+
+// retrieve both diagonals of the board
+var getDiagonals = (board) => {
+  var lines = [getDiagonal(board), getDiagonal(rotateBoard(board))];
+  return R.filter((line) => {
+    return line.length === 4;
+  }, lines);
+};
+
 // retrieve properties of pieces
 var getProperties = (pieces) => {
   return R.unnest(R.map((i) => {
@@ -74,10 +106,11 @@ var isWinner = (lines) => {
   return R.contains(true, results);
 };
 
+// check every applicable row, column, and diagonal for a winning line
 var checkBoard = (board) => {
   var rows = getLines(board);
   var cols = getLines(R.transpose(board, board));
-  var diags = []; // ??? functionally
+  var diags = getDiagonals(board);
   if(isWinner(rows) || isWinner(cols) || isWinner(diags)) {
     return true;
   }
@@ -206,7 +239,7 @@ var connectIRC = (callback) => {
   // establish connection
   // determine who goes first (p1 == user)
   var test = setInterval(() => {
-    callback('p2');
+    callback('p1');
     clearInterval(test);
   }, 1000);
   test;

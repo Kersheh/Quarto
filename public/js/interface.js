@@ -99,13 +99,13 @@ var displayWinner = (result) => {
   $('#info-next-piece').hide();
   $('#game-results').show();
   if(result === 'p1') {
-    $('#game-results').append(' You have won! :)');
+    $('#game-results').append(' <b>You have won! :)</b>');
   }
   if(result === 'p2') {
-    $('#game-results').append(' Your opponent has won. :(');
+    $('#game-results').append(' <b>Your opponent has won. :(</b>');
   }
   if(result == 'tie') {
-    $('#game-results').append(' It\'s a tie!');
+    $('#game-results').append(' <b>It\'s a tie!</b>');
   }
   unbindSelectors();
 };
@@ -178,6 +178,7 @@ var setButton = (callback) => {
   });
 };
 
+// tile selection and turn depending on player
 var selectTile = (board, piece, pieces, turn, first) => {
   // player 1 turn
   if(turn === 'p1') {
