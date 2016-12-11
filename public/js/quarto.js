@@ -158,6 +158,11 @@ var sendTurn = (socket, board, pieces, x, y, next_piece) => {
     y: y,
     piece: next_piece
   };
+  // check if local win as waitTurn may not get a response from opponent
+  var winner = isOver(board, 'p2');
+  if(winner.orJust()) {
+    displayWinner(winner.just());
+  }
   socket.emit('local turn', JSON.stringify(turn));
   waitTurn(socket, board, pieces, next_piece);
 };
