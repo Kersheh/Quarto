@@ -1,8 +1,10 @@
 var path = require('path');
-var express = require('express');
 var irc = require('irc');
-
+var express = require('express');
 var app = express();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+
 var port = process.env.PORT || 8080;
 
 // server public files
@@ -26,17 +28,41 @@ var client = new irc.Client(config.server, config.botName, {
   autoConnect: config.connect
 });
 
-// establich IRC connection
-client.connect(config.reconnect, () => {
-  console.log('Bot connected to channel ' + config.channels[0] + ' @ ' + config.server);
+// quarto socket.io interaction
+io.on('connection', (socket) => {
+  // client connect
+  console.log('Local client connected.');
 
-  // attach channel listeners
-  client.addListener('message' + config.channels[0], (from, to, text, message) => {
-  	client.say(config.channels[0], 'These aren\'t the droids you\'re looking for.');
+  // IRC turn listener
+  var turnListener = (from, to, message) => {
+    // client.say(config.channels[0], 'Opponent message received.');
+    socket.emit('opponent turn', message.args[1]);
+  };
+
+  // establich IRC connection when local user connects to app
+  client.connect(config.reconnect, () => {
+    console.log('Bot connected to channel ' + config.channels[0] + ' @ ' + config.server);
+
+    // attach channel listeners
+    client.addListener('message' + config.channels[0], turnListener);
+  });
+
+  // local client turn
+  socket.on('local turn', (turn) => {
+    console.log('Local:', JSON.parse(turn));
+    // send turn over IRC
+    client.say(config.channels[0], turn);
+  });
+
+  // client disconnect
+  socket.on('disconnect', () => {
+    console.log('Local client disconnected.');
+    client.removeListener('message' + config.channels[0], turnListener);
+    client.disconnect();
   });
 });
 
 // execute game server
-app.listen(port, () => {
+http.listen(port, () => {
   console.log('Quarto server listening on', port);
 });

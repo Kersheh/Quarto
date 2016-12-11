@@ -111,6 +111,7 @@ var displayWinner = (result) => {
 };
 
 // piece and tile selection -- not a functional solution using mutable data
+// not sure of a better way to interact with UI functionally
 var selected_piece = undefined;
 var selected_tile = undefined;
 var clearSelected = () => {
@@ -179,7 +180,7 @@ var setButton = (callback) => {
 };
 
 // tile selection and turn depending on player
-var selectTile = (board, piece, pieces, turn, first) => {
+var selectTile = (socket, board, piece, pieces, turn, first) => {
   // player 1 turn
   if(turn === 'p1') {
     // set select button to place piece
@@ -192,10 +193,12 @@ var selectTile = (board, piece, pieces, turn, first) => {
           hideNext();
           removePiece(piece);
           if(!isBoardFull(new_board)) {
-            p1_select_piece(new_board, new_pieces);
+            p1_select_piece(x, y, new_board, new_pieces);
           }
           else {
-            runGame(new_board, new_pieces, piece, 'p2', false);
+            sendTurn(socket, x, y, [], () => {
+              runGame(socket, new_board, new_pieces, [], 'p2', false);
+            });
           }
         }, () => {
           p1_select_tile();
@@ -204,15 +207,17 @@ var selectTile = (board, piece, pieces, turn, first) => {
     };
 
     // set select button to select piece for opponent
-    var p1_select_piece = (board, pieces) => {
+    var p1_select_piece = (x, y, board, pieces) => {
       setButton(() => {
         getPiece((piece) => {
           updateNext(piece);
           removePiece(piece);
           waitNext();
-          runGame(board, pieces, piece, 'p2', false);
+          sendTurn(socket, x, y, piece, () => {
+            runGame(socket, board, pieces, piece, 'p2', false);
+          });
         }, () => {
-          p1_select_piece(board, pieces);
+          p1_select_piece(x, y, board, pieces);
         });
       });
     };
@@ -223,14 +228,15 @@ var selectTile = (board, piece, pieces, turn, first) => {
       showNext();
       p1_select_tile();
     }
+    // player 1 has first turn of the game
     else {
       hideNext();
-      p1_select_piece(board, pieces);
+      p1_select_piece(-1, -1, board, pieces); // invalid coordinates as turn one has no play
     }
   }
   else {
     updateNext(piece);
     showNext();
-    runGame(board, pieces, piece, 'p1', false);
+    runGame(socket, board, pieces, piece, 'p1', false);
   }
 };

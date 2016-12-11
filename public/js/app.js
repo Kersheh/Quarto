@@ -1,14 +1,15 @@
 $(() => {
   var modules = () => {
-    return (typeof R !== 'undefined' &&        // ramda js -- functional library
-            typeof Maybe !== 'undefined' &&    // monet js -- Maybe monad
-            typeof Either !== 'undefined');   // monet js -- Either monad
+    return (typeof io !== 'undefined' &&        // socket.io
+            typeof R !== 'undefined' &&         // ramda js -- functional library
+            typeof Maybe !== 'undefined' &&     // monet js -- Maybe monad
+            typeof Either !== 'undefined');     // monet js -- Either monad
   };
-
   if(!modules()) {
     console.log('Modules missing.');
   }
   else {
-    initApp();
+    var socket = io.connect();
+    initApp(socket);
   }
 });

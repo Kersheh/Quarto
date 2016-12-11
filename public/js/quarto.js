@@ -159,14 +159,23 @@ var updatePieces = (piece, pieces) => {
   }, pieces);
 };
 
-// send opponent finished turn
-var sendTurn = () => {
-
+// send server turn as json
+var sendTurn = (socket, x, y, piece, callback) => {
+  var turn = {
+    x: x,
+    y: y,
+    piece: piece
+  };
+  socket.emit('local turn', JSON.stringify(turn));
+  waitTurn(socket, callback);
 };
 
-// get opponents turn
-var waitTurn = () => {
-
+// get opponents turn from the server
+var waitTurn = (socket, callback) => {
+  socket.once('opponent turn', (turn) => {
+    console.log(turn);
+    callback();
+  });
 };
 
 // temporary bot piece selection
@@ -197,7 +206,7 @@ var botResponse = (board, piece, pieces) => {
 };
 
 // run game
-var runGame = (board, pieces, next_piece, turn, first) => {
+var runGame = (socket, board, pieces, next_piece, turn, first) => {
   // check for winner
   var winner = isOver(board, turn);
   if(winner.orJust()) {
@@ -207,7 +216,7 @@ var runGame = (board, pieces, next_piece, turn, first) => {
   else {
     // player 1 - user turn
     var play = turn == 'p1' ? () => {
-      selectTile(board, next_piece, pieces, 'p1', first);
+      selectTile(socket, board, next_piece, pieces, 'p1', first);
     // player 2 - opponent turn
     } : () => {
       var response = botResponse(board, next_piece, pieces); // opponent turn response
@@ -222,10 +231,10 @@ var runGame = (board, pieces, next_piece, turn, first) => {
       }
 
       if(!isBoardFull(new_board)) {
-        selectTile(new_board, response.next_piece, new_pieces, 'p2', first);
+        selectTile(socket, new_board, response.next_piece, new_pieces, 'p2', first);
       }
       else {
-        runGame(new_board, new_pieces, [], 'p2', false); // board is full, end game
+        runGame(socket, new_board, new_pieces, [], 'p2', false); // board is full, end game
       }
     }
     play();
@@ -239,16 +248,16 @@ var connectIRC = (callback) => {
   // establish connection
   // determine who goes first (p1 == user)
   var test = setInterval(() => {
-    callback('p1');
+    callback('p2');
     clearInterval(test);
   }, 1000);
   test;
 };
 
 // initialize web app
-var initApp = () => {
+var initApp = (socket) => {
   setup(init_pieces); // setup UI
   connectIRC((turn) => {
-    runGame(init_board, init_pieces, [], turn, true);
+    runGame(socket, init_board, init_pieces, [], turn, true);
   });
 };
