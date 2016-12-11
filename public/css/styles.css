@@ -157,7 +157,7 @@ body {
   cursor: default;
 }
 
-.p1-select, .p1-selected, .p2-selected {
+.p1-select, .p1-selected, .p2-selected, .p2-first {
   display: none;
 }
 

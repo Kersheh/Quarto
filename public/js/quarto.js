@@ -172,35 +172,9 @@ var waitTurn = (socket, board, pieces, piece) => {
 // get opponent piece if first turn
 var opponentsFirstTurn = (socket, board, pieces) => {
   socket.once('opponent turn', (turn) => {
+    hideOpponentsFirst();
     runGame(socket, board, pieces, JSON.parse(turn).piece, 'p1', false, {});
   });
-};
-
-// temporary bot piece selection
-var getRandomPiece = (pieces) => {
-  return pieces[Math.floor(Math.random() * pieces.length)];
-};
-
-// temporary bot turn
-var botResponse = (board, piece, pieces) => {
-  if(piece.length === 0) {
-    return {
-      x: -1,
-      y: -1,
-      next_piece: getRandomPiece(pieces)
-    };
-  }
-  // hacky temporary loop for random bot piece placement
-  while(1) {
-    var x = Math.floor(Math.random() * 4), y = Math.floor(Math.random() * 4);
-    if(board[y][x].isNothing()) {
-      return {
-        x: x,
-        y: y,
-        next_piece: getRandomPiece(updatePieces(piece, pieces))
-      };
-    }
-  }
 };
 
 // run game
@@ -220,6 +194,7 @@ var runGame = (socket, board, pieces, next_piece, turn, first, res) => {
       // var res = botResponse(board, next_piece, pieces); // bot turn response
       // if first turn, wait on opponent response
       if(first) {
+        showOpponentsFirst();
         opponentsFirstTurn(socket, board, pieces);
       }
       else {
@@ -247,21 +222,47 @@ var runGame = (socket, board, pieces, next_piece, turn, first, res) => {
 
 /* App configuration */
 
-// connect to IRC
-var connectIRC = (callback) => {
-  // establish connection
+// connect to server and IRC
+var connectIRC = (socket, callback) => {
   // determine who goes first (p1 == user)
-  var test = setInterval(() => {
-    callback('p2');
-    clearInterval(test);
-  }, 1000);
-  test;
+  socket.once('first', (turn) => {
+    callback(turn);
+  });
 };
 
 // initialize web app
 var initApp = (socket) => {
   setup(init_pieces); // setup UI
-  connectIRC((turn) => {
+  connectIRC(socket, (turn) => {
     runGame(socket, init_board, init_pieces, [], turn, true, {});
   });
+};
+
+/* Random bot for testing */
+
+// temporary bot piece selection
+var getRandomPiece = (pieces) => {
+  return pieces[Math.floor(Math.random() * pieces.length)];
+};
+
+// temporary bot turn
+var botResponse = (board, piece, pieces) => {
+  if(piece.length === 0) {
+    return {
+      x: -1,
+      y: -1,
+      next_piece: getRandomPiece(pieces)
+    };
+  }
+  // hacky temporary loop for random bot piece placement
+  while(1) {
+    var x = Math.floor(Math.random() * 4), y = Math.floor(Math.random() * 4);
+    if(board[y][x].isNothing()) {
+      return {
+        x: x,
+        y: y,
+        next_piece: getRandomPiece(updatePieces(piece, pieces))
+      };
+    }
+  }
 };

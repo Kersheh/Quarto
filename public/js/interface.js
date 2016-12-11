@@ -73,6 +73,16 @@ var waitNext = () => {
   $('.p1-selected').show();
 };
 
+// show opponent is first
+var showOpponentsFirst = () => {
+  $('.p2-first').show();
+};
+
+// hide opponent is first
+var hideOpponentsFirst = () => {
+  $('.p2-first').hide();
+};
+
 // update next piece to be played
 var updateNext = (classes) => {
   var selector = $('.next-piece');
