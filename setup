@@ -1,0 +1,2 @@
+#!/bin/bash
+cp ./config.json node_modules/irc-js/config-example.json
