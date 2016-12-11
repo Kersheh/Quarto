@@ -4,13 +4,13 @@
   "description": "",
   "main": "quarto.js",
   "scripts": {
-    "server": "./setup && node server.js"
+    "server": "node server.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "express": "^4.14.0",
-    "irc-js": "^2.0.0-beta.5",
+    "irc": "^0.5.2",
     "jquery": "^3.1.1",
     "monet": "^0.8.10",
     "ramda": "^0.22.1"
