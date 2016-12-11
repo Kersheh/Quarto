@@ -196,9 +196,7 @@ var selectTile = (socket, board, piece, pieces, turn, first) => {
             p1_select_piece(x, y, new_board, new_pieces);
           }
           else {
-            sendTurn(socket, x, y, [], () => {
-              runGame(socket, new_board, new_pieces, [], 'p2', false);
-            });
+            sendTurn(socket, new_board, new_pieces, x, y, []);
           }
         }, () => {
           p1_select_tile();
@@ -213,9 +211,7 @@ var selectTile = (socket, board, piece, pieces, turn, first) => {
           updateNext(piece);
           removePiece(piece);
           waitNext();
-          sendTurn(socket, x, y, piece, () => {
-            runGame(socket, board, pieces, piece, 'p2', false);
-          });
+          sendTurn(socket, board, pieces, x, y, piece);
         }, () => {
           p1_select_piece(x, y, board, pieces);
         });
@@ -237,6 +233,6 @@ var selectTile = (socket, board, piece, pieces, turn, first) => {
   else {
     updateNext(piece);
     showNext();
-    runGame(socket, board, pieces, piece, 'p1', false);
+    runGame(socket, board, pieces, piece, 'p1', false, {});
   }
 };

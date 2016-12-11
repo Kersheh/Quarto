@@ -36,6 +36,7 @@ io.on('connection', (socket) => {
   // IRC turn listener
   var turnListener = (from, to, message) => {
     // client.say(config.channels[0], 'Opponent message received.');
+    console.log('Opponent:', JSON.parse(message.args[1]));
     socket.emit('opponent turn', message.args[1]);
   };
 

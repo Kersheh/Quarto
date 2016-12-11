@@ -160,21 +160,20 @@ var updatePieces = (piece, pieces) => {
 };
 
 // send server turn as json
-var sendTurn = (socket, x, y, piece, callback) => {
+var sendTurn = (socket, board, pieces, x, y, next_piece) => {
   var turn = {
     x: x,
     y: y,
-    piece: piece
+    piece: next_piece
   };
   socket.emit('local turn', JSON.stringify(turn));
-  waitTurn(socket, callback);
+  waitTurn(socket, board, pieces, next_piece);
 };
 
 // get opponents turn from the server
-var waitTurn = (socket, callback) => {
+var waitTurn = (socket, board, pieces, piece) => {
   socket.once('opponent turn', (turn) => {
-    console.log(turn);
-    callback();
+    runGame(socket, board, pieces, piece, 'p2', false, JSON.parse(turn));
   });
 };
 
@@ -206,7 +205,7 @@ var botResponse = (board, piece, pieces) => {
 };
 
 // run game
-var runGame = (socket, board, pieces, next_piece, turn, first) => {
+var runGame = (socket, board, pieces, next_piece, turn, first, res) => {
   // check for winner
   var winner = isOver(board, turn);
   if(winner.orJust()) {
@@ -219,10 +218,10 @@ var runGame = (socket, board, pieces, next_piece, turn, first) => {
       selectTile(socket, board, next_piece, pieces, 'p1', first);
     // player 2 - opponent turn
     } : () => {
-      var response = botResponse(board, next_piece, pieces); // opponent turn response
-      if(response.x >= 0 && response.y >= 0) {
-        playPiece(response.x, response.y, next_piece); // update ui
-        var new_board = updateBoard(board, next_piece, response.x, response.y);
+      // var res = botResponse(board, next_piece, pieces); // bot turn response
+      if(res.x >= 0 && res.y >= 0) {
+        playPiece(res.x, res.y, next_piece); // update ui
+        var new_board = updateBoard(board, next_piece, res.x, res.y);
         var new_pieces = updatePieces(next_piece, pieces);
       }
       else {
@@ -231,10 +230,10 @@ var runGame = (socket, board, pieces, next_piece, turn, first) => {
       }
 
       if(!isBoardFull(new_board)) {
-        selectTile(socket, new_board, response.next_piece, new_pieces, 'p2', first);
+        selectTile(socket, new_board, res.piece, new_pieces, 'p2', first);
       }
       else {
-        runGame(socket, new_board, new_pieces, [], 'p2', false); // board is full, end game
+        runGame(socket, new_board, new_pieces, [], 'p2', false, {}); // board is full, end game
       }
     }
     play();
@@ -248,7 +247,7 @@ var connectIRC = (callback) => {
   // establish connection
   // determine who goes first (p1 == user)
   var test = setInterval(() => {
-    callback('p2');
+    callback('p1');
     clearInterval(test);
   }, 1000);
   test;
@@ -258,6 +257,6 @@ var connectIRC = (callback) => {
 var initApp = (socket) => {
   setup(init_pieces); // setup UI
   connectIRC((turn) => {
-    runGame(socket, init_board, init_pieces, [], turn, true);
+    runGame(socket, init_board, init_pieces, [], turn, true, {});
   });
 };
