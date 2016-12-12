@@ -29,6 +29,7 @@ var client = new irc.Client(config.server, config.botName, {
 });
 
 // quarto socket.io interaction
+// note: client does not properly wait for IRC connection, needs fix
 io.on('connection', (socket) => {
   // client connect
   console.log('Local client connected.');
